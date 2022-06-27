@@ -1,14 +1,5 @@
-# <----- React Component lib ----->
+# <----- Task mate ----->
 
 ## About
-A react library of useful UI components
 
-## Content
-
-#### Pickers:
-- Date Time Picker
-- Date Picker
-- Time Picker
-
-#### Form Fields:
-- Input
+A tesk managing web application
