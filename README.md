@@ -2,4 +2,4 @@
 
 ## About
 
-A tesk managing web application
+A task managing web application
