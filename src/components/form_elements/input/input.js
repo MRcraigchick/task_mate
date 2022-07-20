@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './input.module.css';
 import font from './fonts/primary/primary_font.module.css';
 
-export default function Input({ value }) {
+export default function Input ({ type, name, placeholder, placholderOutline = false, onChange = (e) => { } }) {
   const [outline, setOutline] = useState('default');
+  const [placeholderStyles, setPlaceholderStyles] = useState('inline');
+  const [value, setValue] = useState('');
 
   const inputRef = useRef();
 
@@ -13,6 +15,14 @@ export default function Input({ value }) {
       window.removeEventListener('click', handleClick);
     };
   });
+
+  useEffect(() => {
+    if (value === '' || value === undefined) {
+      setPlaceholderStyles('inline');
+      return;
+    }
+    setPlaceholderStyles('float');
+  }, []);
 
   const handleClick = (e) => {
     let match = false;
@@ -26,26 +36,38 @@ export default function Input({ value }) {
       return;
     }
     setOutline('default');
+    if (value === '' || value === undefined) {
+      setPlaceholderStyles('inline');
+    }
   };
 
   return (
     <div
-      ref={inputRef}
-      className={`${styles.inputContainer} ${styles[outline]} ${font.primaryReg}`}
-      onClick={() => {
+      ref={ inputRef }
+      className={ `${styles.inputContainer} ${styles[outline]} ${font.primaryReg}` }
+      onClick={ () => {
         setOutline('focused');
-      }}
-      onMouseDown={() => {
+        if (value !== '' || value !== undefined) {
+          setPlaceholderStyles('float');
+        }
+      } }
+      onMouseDown={ () => {
         setOutline('focused');
-      }}
-      onMouseOver={() => {
+      } }
+      onMouseOver={ () => {
         return outline !== 'focused' ? setOutline('hover') : setOutline('focused');
-      }}
-      onMouseLeave={() => {
+      } }
+      onMouseLeave={ () => {
         return outline !== 'focused' ? setOutline('default') : setOutline('focused');
-      }}>
-      <input value={value} />
-      <div className={styles.inputPaddingRight}></div>
+      } }>
+      <label htmlFor={ name } className={ `${styles.placeholder} ${styles[placeholderStyles]} ${placholderOutline ? placeholderStyles === 'float' ? styles[outline] : '' : styles.noOutline}` }>
+        <p>{ placeholder }</p>
+      </label>
+      <input type={ type } name={ name } onChange={ (e) => {
+        setValue(e.target.value);
+        onChange(e);
+      } } />
+      <div className={ styles.inputPaddingRight }></div>
     </div>
   );
 }
@@ -53,7 +75,7 @@ export default function Input({ value }) {
 const util = (() => {
   let nestedChildren = [];
   return {
-    elementAndNestedChildren(element) {
+    elementAndNestedChildren (element) {
       nestedChildren = [...nestedChildren, element];
       for (let child of element.children) {
         this.elementAndNestedChildren(child);

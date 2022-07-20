@@ -4,7 +4,7 @@ import styles from './input.module.css';
 import util from '../../lib/util';
 import { format } from 'date-fns';
 
-export default function Input({ openPicker, setOpenPicker, getValue, dateFormat, hr24 }) {
+export default function Input ({ openPicker, setOpenPicker, getValue, dateFormat, hr24 }) {
   const [outline, setOutline] = useState('default');
   const [state] = useDateTime();
   const inputRef = useRef();
@@ -40,21 +40,21 @@ export default function Input({ openPicker, setOpenPicker, getValue, dateFormat,
 
   return (
     <div
-      ref={inputRef}
-      className={`${styles.inputContainer} ${styles[outline]} `}
-      onClick={() => {
+      ref={ inputRef }
+      className={ `${styles.inputContainer} ${styles[outline]} ` }
+      onClick={ () => {
         setOpenPicker(true);
         setOutline('focused');
-      }}
-      onMouseDown={() => {
+      } }
+      onMouseDown={ () => {
         setOutline('focused');
-      }}
-      onMouseOver={() => {
+      } }
+      onMouseOver={ () => {
         return outline !== 'focused' ? setOutline('hover') : setOutline('focused');
-      }}
-      onMouseLeave={() => {
+      } }
+      onMouseLeave={ () => {
         return outline !== 'focused' ? setOutline('default') : setOutline('focused');
-      }}>
+      } }>
       <input
         disabled
         value={
@@ -62,7 +62,7 @@ export default function Input({ openPicker, setOpenPicker, getValue, dateFormat,
           ` ${hr24 ? '' : format(state.dateTime, 'HH') >= 12 ? 'pm' : 'am'}`
         }
       />
-      <div className={styles.inputPaddingRight}></div>
+      <div className={ styles.inputPaddingRight }></div>
     </div>
   );
 }

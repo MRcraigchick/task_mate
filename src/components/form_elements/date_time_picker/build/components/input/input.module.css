@@ -11,10 +11,11 @@
 }
 
 .inputContainer input {
+  --side-padding: 20px;
   cursor: text;
   color: var(--bold-base);
   background-color: transparent;
-  padding-left: 10px;
+  padding-left: var(--side-padding);
   border: none;
   font-size: var(--input-value-font-size);
   letter-spacing: 0.5px;
@@ -23,15 +24,18 @@
 }
 
 .inputPaddingRight {
-  width: 10px;
+  width: var(--side-padding);
   height: 100%;
 }
+
 .hover {
   outline: solid 2px var(--bold-base);
 }
+
 .default {
   outline: solid 1px var(--input-border-default);
 }
+
 .focused {
   outline: solid 2px var(--input-border-focused);
 }

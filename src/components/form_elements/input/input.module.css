@@ -1,4 +1,5 @@
 .inputContainer {
+  --side-padding: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -7,17 +8,18 @@
   outline: solid 1px #bebebe;
   border-radius: 3px;
   width: 100%;
-  max-width: 250px;
   height: 56px;
+  margin-bottom: 10px;
+  padding-left: var(--side-padding);
 }
 
 .inputContainer input {
   cursor: text;
   color: black;
   background-color: transparent;
-  padding-left: 10px;
+  padding-left: var(--side-padding);
   border: none;
-  font-size: 1rem;
+  font-size: 0.9rem;
   letter-spacing: 0.5px;
   font-weight: 400;
   width: 100%;
@@ -26,15 +28,47 @@
 }
 
 .inputPaddingRight {
-  width: 10px;
+  width: var(--side-padding);
   height: 100%;
 }
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  padding: 2px 8px 2px 8px;
+  background-color: white;
+  transition: transform 0.15s ease-in, font-size 0.15s ease-in, border 0.15s ease-in-out;
+}
+
+.inline {
+  position: absolute;
+  transform: translateY(0px);
+  font-size: 0.9rem;
+}
+
+.float {
+  position: absolute;
+  transform: translate(-5px, -28px);
+  font-size: 0.7rem;
+}
+
 .hover {
   outline: solid 2px black;
+  color: black;
 }
+
 .default {
   outline: solid 1px #bebebe;
+  color: #808080;
 }
+
 .focused {
   outline: solid 2px #0072e5;
+  color: #0072e5;
+}
+
+.noOutline {
+  outline: none;
 }

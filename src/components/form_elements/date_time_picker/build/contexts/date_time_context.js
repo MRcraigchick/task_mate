@@ -3,13 +3,14 @@ import { createContext, useContext, useReducer } from 'react';
 
 const DateTimeContext = createContext(undefined);
 
-export function DateTimeContextProvider({ children }) {
-  const [state, dispatch] = useReducer(dateTimeReducer, { dateTime: new Date() });
+export function DateTimeContextProvider ({ children }) {
+  const dateNow = new Date();
+  const [state, dispatch] = useReducer(dateTimeReducer, { dateTime: dateNow, timeOfDay: getTimeOfDay(dateNow) });
 
-  return <DateTimeContext.Provider value={[state, dispatch]}>{children}</DateTimeContext.Provider>;
+  return <DateTimeContext.Provider value={ [state, dispatch] }>{ children }</DateTimeContext.Provider>;
 }
 
-export function useDateTime() {
+export function useDateTime () {
   const context = useContext(DateTimeContext);
   if (!context) {
     throw new Error('useDateTime must be used within a DateTimeContextProvider');
@@ -17,7 +18,7 @@ export function useDateTime() {
   return context;
 }
 
-function dateTimeReducer(state, action) {
+function dateTimeReducer (state, action) {
   const setDateTime = (options) => {
     return set(state.dateTime, options);
   };
@@ -28,6 +29,9 @@ function dateTimeReducer(state, action) {
     }
     case 'set-date-time': {
       return { ...state, dateTime: setDateTime(action.value) };
+    }
+    case 'set-time-of-day': {
+      return { ...state, timeOfDay: action.value };
     }
     case 'year++': {
       return { ...state, dateTime: setDateTime({ year: Number(format(state.dateTime, 'yyyy')) + 1 }) };
@@ -69,4 +73,9 @@ function dateTimeReducer(state, action) {
       throw new Error(`Unable to handle action type ${action.type}`);
     }
   }
+}
+
+function getTimeOfDay (dateInst) {
+  const hour = format(dateInst, 'HH');
+  return hour >= 12 ? 'PM' : 'AM';
 }

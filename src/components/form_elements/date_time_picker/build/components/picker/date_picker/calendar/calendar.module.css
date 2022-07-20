@@ -6,18 +6,21 @@
   width: 100%;
   padding: 20px;
 }
+
 .weekdaysContainer {
   display: flex;
   flex-direction: row;
   justify-content: center;
   width: 100%;
 }
+
 .weekdays {
   display: flex;
   flex-direction: row;
   justify-content: center;
   width: 100%;
 }
+
 .weekdayCell {
   display: flex;
   align-items: center;
@@ -27,24 +30,28 @@
   color: var(--unfocused);
   margin-bottom: 10px;
 }
+
 .daysOfMonthContainer {
   display: flex;
   flex-direction: row;
   justify-content: center;
   width: 100%;
 }
+
 .daysOfMonth {
   display: grid;
   grid-template-columns: repeat(7, calc(100% / 7));
   grid-auto-flow: row;
   width: 100%;
 }
+
 .weekdayPaddingCell {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
 }
+
 .daysOfMonthCell {
   display: flex;
   align-items: center;
@@ -59,16 +66,32 @@
   font-size: var(--day-number-font-size);
   color: var(--day-number-color);
 }
+
 .daysOfMonthCell:hover {
   background-color: var(--secondary-hover);
 }
+
 .selectedDay {
   background-color: var(--primary);
   color: var(--bold-contrast);
   font-weight: 600;
 }
+
 .selectedDay:hover {
   background-color: var(--primary);
+}
+
+.disabled {
+  color: #c2c2c2;
+  background-color: transparent;
+}
+
+.disabled:active {
+  background-color: transparent;
+}
+
+.disabled:hover {
+  background-color: transparent;
 }
 
 @media (max-width: 400px) {

@@ -5,9 +5,10 @@ import YearPicker from './year_picker/year_picker.js';
 import { useDateTime } from '../../../contexts/date_time_context';
 import { format } from 'date-fns';
 
-export default function DatePicker({ pickerType, setPickerType, yearRange }) {
+export default function DatePicker ({ pickerType, setPickerType, dateLimits, timeOfDay, setTimeOfDay }) {
   const [transitionStyle, setTransitionStyle] = useState(styles.triangleDown);
   const [state, dispatch] = useDateTime();
+  const [dateChange, setDateChange] = useState(false);
 
   useEffect(() => {
     if (pickerType === 'calendar') {
@@ -17,69 +18,113 @@ export default function DatePicker({ pickerType, setPickerType, yearRange }) {
     setTransitionStyle(styles.triangleUp);
   }, [pickerType]);
 
+  useEffect(() => {
+    if (dateChange) {
+      if (Number(format(state.dateTime, 'yyyy')) === Number(format(dateLimits.min, 'yyyy'))
+        && Number(format(state.dateTime, 'MM')) === Number(format(dateLimits.min, 'MM'))) {
+        if (Number(format(state.dateTime, 'd')) < Number(format(dateLimits.min, 'd'))) {
+          console.log('min');
+          dispatch({ type: 'new-date', value: dateLimits.min });
+          setDateChange(false);
+          return;
+        }
+      }
+      if (Number(format(state.dateTime, 'yyyy')) === Number(format(dateLimits.max, 'yyyy'))
+        && Number(format(state.dateTime, 'M')) === Number(format(dateLimits.max, 'M'))) {
+        if (Number(format(state.dateTime, 'd')) > Number(format(dateLimits.max, 'd'))) {
+          console.log('max');
+          dispatch({ type: 'new-date', value: dateLimits.max });
+          setDateChange(false);
+          return;
+        }
+      }
+      setDateChange(false);
+    }
+  }, [dateChange]);
+
   return (
-    <div className={styles.datePickerContainer}>
-      <div className={styles.navbarContainer}>
-        <div className={styles.currentMonthYearContainer}>
-          <div className={styles.currentMonthYearWrapper}>
+    <div className={ styles.datePickerContainer }>
+      <div className={ styles.navbarContainer }>
+        <div className={ styles.currentMonthYearContainer }>
+          <div className={ styles.currentMonthYearWrapper }>
             <button
               type='button'
-              className={`${styles.currentMonthYear}`}
-              onClick={() => {
+              className={ `${styles.currentMonthYear}` }
+              onClick={ () => {
                 if (pickerType !== 'calendar') {
                   setPickerType('calendar');
                   return;
                 }
                 setPickerType('year');
-              }}>
-              <p>{format(state.dateTime, 'MMMM')}</p>
-              <p>{format(state.dateTime, 'yyyy')}</p>
+              } }>
+              <p>{ format(state.dateTime, 'MMMM') }</p>
+              <p>{ format(state.dateTime, 'yyyy') }</p>
             </button>
-            <div className={styles.yearPickerToggleBtnContainer}>
+            <div className={ styles.yearPickerToggleBtnContainer }>
               <button
                 type='button'
-                className={styles.yearPickerToggleBtn}
-                onClick={() => {
+                className={ styles.yearPickerToggleBtn }
+                onClick={ () => {
                   if (pickerType !== 'calendar') {
                     setPickerType('calendar');
                     return;
                   }
                   setPickerType('year');
-                }}>
-                <TriangleIcon transitionStyle={transitionStyle} />
+                } }>
+                <TriangleIcon transitionStyle={ transitionStyle } />
               </button>
             </div>
           </div>
         </div>
-        <div className={styles.monthsSelectorsContainer}>
-          <div className={styles.monthSelectors}>
-            <div className={styles.monthSelectorContainer}>
-              <button
+        <div className={ styles.monthsSelectorsContainer }>
+          <div className={ styles.monthSelectors }>
+            <div className={ styles.monthSelectorContainer }>
+              { Number(format(state.dateTime, 'yyyy')) <= Number(format(dateLimits.min, 'yyyy')) && Number(format(state.dateTime, 'M')) <= Number(format(dateLimits.min, 'M')) ? "" : <button
                 type='button'
-                onClick={() => dispatch({ type: 'month--' })}
-                className={`${styles.directionBtnLeft}}`}>
+                onClick={ () => {
+                  if (Number(format(state.dateTime, 'yyyy')) <= Number(format(dateLimits.min, 'yyyy')) && Number(format(state.dateTime, 'M')) < Number(format(dateLimits.min, 'M'))) {
+                    dispatch({ type: 'new-date', value: dateLimits.min });
+                    setDateChange(true);
+                  } else {
+                    dispatch({ type: 'month--' });
+                    setDateChange(true);
+                  }
+                } }
+                className={ `${styles.directionBtnLeft}}` }>
                 <ArrowLeftIcon />
-              </button>
+              </button> }
             </div>
-            <div className={styles.monthSelectorContainer}>
-              <button type='button' onClick={() => dispatch({ type: 'month++' })} className={styles.directionBtnRight}>
+            <div className={ styles.monthSelectorContainer }>
+              { Number(format(state.dateTime, 'yyyy')) >= Number(format(dateLimits.max, 'yyyy')) && Number(format(state.dateTime, 'M')) >= Number(format(dateLimits.max, 'M')) ? "" : <button
+                type='button'
+                onClick={ () => {
+                  if (Number(format(state.dateTime, 'yyyy')) >= Number(format(dateLimits.max, 'yyyy')) && Number(format(state.dateTime, 'M')) > Number(format(dateLimits.max, 'M'))) {
+                    dispatch({ type: 'new-date', value: dateLimits.max });
+                    setDateChange(true);
+                  } else {
+                    dispatch({ type: 'month++' });
+                    setDateChange(true);
+                  }
+                } }
+                className={ `${styles.directionBtnLeft}}` }>
                 <ArrowRightIcon />
               </button>
+              }
             </div>
           </div>
         </div>
       </div>
-      <div className={`${styles.currentPickerContainer} ${pickerType === 'calendar' ? styles.overFlowYHidden : ''} }`}>
-        {pickerType === 'calendar' ? <Calendar /> : <YearPicker range={yearRange} />}
+      <div className={ `${styles.currentPickerContainer} ${pickerType === 'calendar' ? styles.overFlowYHidden : ''} }` }>
+        { pickerType === 'calendar' ? <Calendar dateLimits={ dateLimits } /> : <YearPicker dateLimits={ dateLimits } /> }
       </div>
     </div>
   );
 }
 
-function TriangleIcon({ transitionStyle }) {
+function TriangleIcon ({ transitionStyle }) {
   return (
     <svg
-      className={`${styles.triangleIcon} ${transitionStyle}`}
+      className={ `${styles.triangleIcon} ${transitionStyle}` }
       focusable='false'
       ariahidden='true'
       viewBox='0 0 24 24'>
@@ -87,10 +132,10 @@ function TriangleIcon({ transitionStyle }) {
     </svg>
   );
 }
-function ArrowLeftIcon({ inactiveStyles = '' }) {
+function ArrowLeftIcon ({ inactiveStyles = '' }) {
   return (
     <svg
-      className={`${styles.arrowLeftIcon} ${inactiveStyles}`}
+      className={ `${styles.arrowLeftIcon} ${inactiveStyles}` }
       focusable='false'
       ariahidden='true'
       viewBox='0 0 24 24'>
@@ -98,10 +143,10 @@ function ArrowLeftIcon({ inactiveStyles = '' }) {
     </svg>
   );
 }
-function ArrowRightIcon({ inactiveStyles = '' }) {
+function ArrowRightIcon ({ inactiveStyles = '' }) {
   return (
     <svg
-      className={`${styles.arrowRightIcon} ${inactiveStyles}`}
+      className={ `${styles.arrowRightIcon} ${inactiveStyles}` }
       focusable='false'
       ariahidden='true'
       viewBox='0 0 24 24'>

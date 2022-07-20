@@ -5,7 +5,7 @@
   --prime-reg: 'Roboto';
 
   /* Font sizes */
-  --input-value-font-size: 1rem;
+  --input-value-font-size: 0.9rem;
   --nav-year-font-size: 1.1rem;
   --nav-month-day-font-size: 2.1rem;
   --nav-time-font-size: 2.8rem;
@@ -21,7 +21,7 @@
 
 @media (max-width: 400px) {
   .typography {
-    --input-value-font-size: 1rem;
+    --input-value-font-size: 0.9rem;
     --nav-year-font-size: 0.9rem;
     --nav-month-day-font-size: 1.7rem;
     --nav-time-font-size: 2.5rem;

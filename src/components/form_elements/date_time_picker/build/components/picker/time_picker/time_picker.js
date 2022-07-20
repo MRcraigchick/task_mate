@@ -1,17 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './time_picker.module.css';
 import { useDateTime } from '../../../contexts/date_time_context';
-import { format, set } from 'date-fns';
+import { format } from 'date-fns';
 
-export default function TimePicker({ pickerType, hr24 }) {
+export default function TimePicker ({ pickerType, hr24, dateLimits }) {
   const [state, dispatch] = useDateTime();
   const [timePositions, setTimePositions] = useState([]);
-  const clockRef = useRef();
-  const [initialLoad, setInitialLoad] = useState(true);
-  const [timeOfDay, setTimeOfDay] = useState(
-    format(state.dateTime, 'HH') > 12 ? (hr24 ? 'N' : 'PM') : hr24 ? 'M' : 'AM'
-  );
   const [touchDown, setTouchDown] = useState(false);
+  const clockRef = useRef();
 
   useEffect(() => {
     document.addEventListener('mousedown', mousedownHandler);
@@ -37,34 +33,6 @@ export default function TimePicker({ pickerType, hr24 }) {
       document.removeEventListener('mouseup', mousedownHandler);
     };
   }, [touchDown]);
-
-  useEffect(() => {
-    const currentHour = Number(format(state.dateTime, 'HH'));
-    if (initialLoad) {
-      if (currentHour === 12) {
-        setTimeOfDay(hr24 ? 'N' : 'PM');
-      }
-      return;
-    }
-    if (
-      ((timeOfDay === 'AM' || timeOfDay === 'M') && currentHour > 12) ||
-      ((timeOfDay === 'AM' || timeOfDay === 'M') && currentHour === 12)
-    ) {
-      dispatch({ type: 'set-date-time', value: { hours: currentHour - 12 } });
-      return;
-    }
-    if (
-      ((timeOfDay === 'PM' || timeOfDay === 'N') && currentHour < 12) ||
-      ((timeOfDay === 'PM' || timeOfDay === 'N') && currentHour === 0)
-    ) {
-      dispatch({ type: 'set-date-time', value: { hours: currentHour + 12 } });
-      return;
-    }
-  }, [timeOfDay]);
-
-  useEffect(() => {
-    setInitialLoad(false);
-  }, []);
 
   const mousedownHandler = (e) => {
     setTouchDown(true);
@@ -176,93 +144,108 @@ export default function TimePicker({ pickerType, hr24 }) {
   };
 
   return (
-    <div className={styles.timePickerContainer}>
-      <div className={styles.currentFaceContainer} ref={clockRef}>
-        {pickerType === 'hours' ? (
+    <div className={ styles.timePickerContainer }>
+      <div className={ styles.currentFaceContainer } ref={ clockRef }>
+        { pickerType === 'hours' ? (
           <>
             <HoursFace
-              timeOfDay={timeOfDay}
-              selectedHour={Number(format(state.dateTime, 'HH'))}
-              dispatch={dispatch}
-              hr24={hr24}
-              onTouchMove={touchMoveHandler}
+              selectedHour={ Number(format(state.dateTime, 'HH')) }
+              hr24={ hr24 }
+              onTouchMove={ touchMoveHandler }
+              dateLimits={ dateLimits }
             />
-            <div className={styles.timeOfDaySelectors}>
+            <div className={ styles.timeOfDaySelectors }>
               <button
                 type='button'
-                className={`${styles.AMbtn} ${
-                  timeOfDay === 'AM' || timeOfDay === 'M' ? styles.timeOfDayBtnSelected : ''
-                }`}
-                onClick={() => {
-                  hr24 ? setTimeOfDay('M') : setTimeOfDay('AM');
-                }}>
-                {hr24 ? 'M' : 'AM'}
+                className={ `${styles.AMbtn} ${state.timeOfDay === 'AM' || state.timeOfDay === 'M' ? styles.timeOfDayBtnSelected : ''
+                  }` }
+                onClick={ () => {
+                  hr24 ? dispatch({ type: 'set-time-of-day', value: 'M' }) : dispatch({ type: 'set-time-of-day', value: 'AM' });
+                } }>
+                { hr24 ? 'M' : 'AM' }
               </button>
               <button
                 type='button'
-                className={`${styles.PMbtn} ${
-                  timeOfDay === 'PM' || timeOfDay === 'N' ? styles.timeOfDayBtnSelected : ''
-                }`}
-                onClick={() => {
-                  hr24 ? setTimeOfDay('N') : setTimeOfDay('PM');
-                }}>
-                {hr24 ? 'N' : 'PM'}
+                className={ `${styles.PMbtn} ${state.timeOfDay === 'PM' || state.timeOfDay === 'N' ? styles.timeOfDayBtnSelected : ''
+                  }` }
+                onClick={ () => {
+                  hr24 ? dispatch({ type: 'set-time-of-day', value: 'N' }) : dispatch({ type: 'set-time-of-day', value: 'PM' });
+                } }>
+                { hr24 ? 'N' : 'PM' }
               </button>
             </div>
           </>
         ) : (
           <MinsFace
-            selectedMins={Number(format(state.dateTime, 'mm'))}
-            dispatch={dispatch}
-            onTouchMove={touchMoveHandler}
-            touchDown={touchDown}
+            selectedMins={ Number(format(state.dateTime, 'mm')) }
+            onTouchMove={ touchMoveHandler }
+            touchDown={ touchDown }
+            dateLimits={ dateLimits }
           />
-        )}
+        ) }
       </div>
     </div>
   );
 }
 
-function HoursFace({ timeOfDay, selectedHour, dispatch, hr24, onTouchMove }) {
+function HoursFace ({ selectedHour, hr24, onTouchMove, dateLimits }) {
+  const [state, dispatch] = useDateTime();
   const AM = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(
     (h) => (h = { render: hr24 ? (h === 12 ? '00' : h) : h, value: Number(h) })
   );
   const PM = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0].map(
     (h) => (h = { render: hr24 ? (h === 0 ? '12' : h) : h === 0 ? 12 : h - 12, value: Number(h) })
   );
-  const hours = timeOfDay === 'AM' || timeOfDay === 'M' ? AM : PM;
+
+  const hours = state.timeOfDay === 'AM' || state.timeOfDay === 'M' ? AM : PM;
   const fraction = 360 / 12;
   let degCount = fraction;
 
+  useEffect(() => {
+  }, [state.timeOfDay]);
+
   return (
-    <div className={styles.hoursFace} onTouchMove={onTouchMove}>
-      {hours.map(({ render, value }) => {
+    <div className={ styles.hoursFace } onTouchMove={ onTouchMove }>
+      { hours.map(({ render, value }) => {
         const currentDeg = degCount;
+
+        if (state.timeOfDay === 'AM' && value === 12) {
+          value = 0;
+        }
+        else if (state.timeOfDay === 'PM' && value === 0) {
+          value = 12;
+        }
+
+        const disabled = (
+          !(format(state.dateTime, 'dd/MM/yyyy') === format(dateLimits.min, 'dd/MM/yyyy') ?
+            (Number(value) < Number(format(dateLimits.min, 'HH'))) : false) ?
+            (format(state.dateTime, 'dd/MM/yyyy') === format(dateLimits.max, 'dd/MM/yyyy') ?
+              (Number(value) > Number(format(dateLimits.max, 'HH'))) : false) :
+            true);
 
         degCount += fraction;
         return (
           <div
-            key={currentDeg}
-            style={{
+            key={ currentDeg }
+            style={ {
               transformOrigin: 'bottom',
               transform: `rotate(${currentDeg}deg) scale(0.9)`,
-            }}
-            className={`${styles.clockArm} ${
-              selectedHour === value || selectedHour - 12 === value || selectedHour + 12 === value
+            } }
+            className={ `${styles.clockArm} ${selectedHour === value || selectedHour - 12 === value || selectedHour + 12 === value
+              ? styles.selected
+              : ''
+              }` }>
+            <button
+              style={ {
+                transform: `rotate(${-currentDeg}deg)`,
+              } }
+              disabled={ disabled }
+              value={ value }
+              className={ `${disabled ? styles.disabled : ''} ${styles.hourBtn} ${selectedHour === value || selectedHour - 12 === value || selectedHour + 12 === value
                 ? styles.selected
                 : ''
-            }`}>
-            <button
-              style={{
-                transform: `rotate(${-currentDeg}deg)`,
-              }}
-              value={value}
-              className={`${styles.hourBtn} ${
-                selectedHour === value || selectedHour - 12 === value || selectedHour + 12 === value
-                  ? styles.selected
-                  : ''
-              } `}
-              onClick={(e) => {
+                } ` }
+              onClick={ (e) => {
                 e.preventDefault();
                 if (Number(e.target.value) === 12) {
                   dispatch({ type: 'set-date-time', value: { hours: e.target.value - 12 } });
@@ -273,59 +256,72 @@ function HoursFace({ timeOfDay, selectedHour, dispatch, hr24, onTouchMove }) {
                   return;
                 }
                 dispatch({ type: 'set-date-time', value: { hours: e.target.value } });
-              }}>
-              {render}
+              } }>
+              { render }
             </button>
           </div>
         );
-      })}
-      <div className={styles.center}></div>
+      }) }
+      <div className={ styles.center }></div>
     </div>
   );
 }
 
-function MinsFace({ selectedMins, dispatch, onTouchMove, touchDown }) {
+function MinsFace ({ selectedMins, onTouchMove, dateLimits }) {
+  const [state, dispatch] = useDateTime();
   const mins = [...Array(60).keys()].map((m) => (m = { render: m === 0 || m % 5 === 0 ? m : '-', value: m }));
   const fraction = 360 / 60;
   let degCount = fraction;
 
   return (
-    <div className={styles.minsFace} onTouchMove={onTouchMove}>
-      {mins.map(({ render, value }) => {
+    <div className={ styles.minsFace } onTouchMove={ onTouchMove }>
+      { mins.map(({ render, value }) => {
         const currentDeg = degCount;
+
+        const disabled = (
+          !(format(state.dateTime, 'dd/MM/yyyy') === format(dateLimits.min, 'dd/MM/yyyy') ?
+            (Number(format(state.dateTime, 'HH')) === Number(format(dateLimits.min, 'HH')) ?
+              (Number(value) < Number(format(dateLimits.min, 'mm'))) : false)
+            : false) ?
+            (format(state.dateTime, 'dd/MM/yyyy') === format(dateLimits.max, 'dd/MM/yyyy') ?
+              (Number(format(state.dateTime, 'HH')) === Number(format(dateLimits.max, 'HH')) ?
+                (Number(value)) > Number(format(dateLimits.max, 'mm'))
+                : false)
+              : false)
+            : true);
 
         degCount += fraction;
         return (
           <div
-            key={currentDeg}
+            key={ currentDeg }
             style={
               render === '-'
                 ? {
-                    transformOrigin: 'bottom',
-                    transform: `rotate(${currentDeg}deg) scale(0.9)`,
-                  }
+                  transformOrigin: 'bottom',
+                  transform: `rotate(${currentDeg}deg) scale(0.9)`,
+                }
                 : {
-                    transformOrigin: 'bottom',
-                    transform: `rotate(${currentDeg}deg) scale(0.9)`,
-                  }
+                  transformOrigin: 'bottom',
+                  transform: `rotate(${currentDeg}deg) scale(0.9)`,
+                }
             }
-            className={`${styles.clockArm} ${selectedMins === value ? styles.selected : ''}`}>
+            className={ `${styles.clockArm} ${selectedMins === value ? styles.selected : ''}` }>
             <button
               style={
                 render === '-'
                   ? {
-                      transform: `rotate(90deg)`,
-                    }
+                    transform: `rotate(90deg)`,
+                  }
                   : {
-                      transform: `rotate(${-currentDeg + 6}deg)`,
-                    }
+                    transform: `rotate(${-currentDeg + 6}deg)`,
+                  }
               }
-              className={`${render === '-' ? styles.division : styles.wholeNumber} ${
-                selectedMins === value ? styles.selected : ''
-              }
+              className={ `${disabled ? styles.disabled : ''} ${render === '-' ? styles.division : styles.wholeNumber} ${selectedMins === value ? styles.selected : ''
+                }
               `}
-              value={value}
-              onClick={(e) => {
+              disabled={ disabled }
+              value={ value }
+              onClick={ (e) => {
                 e.preventDefault();
                 if (Number(e.target.value) === 59) {
                   dispatch({ type: 'set-date-time', value: { minutes: Number(e.target.value) - 59 } });
@@ -357,16 +353,16 @@ function MinsFace({ selectedMins, dispatch, onTouchMove, touchDown }) {
                   }
                 }
                 dispatch({ type: 'set-date-time', value: { minutes: e.target.value } });
-              }}
-              onTouchStart={(e) => {
+              } }
+              onTouchStart={ (e) => {
                 e.preventDefault();
-              }}>
-              {render === 0 ? '00' : render}
+              } }>
+              { render === 0 ? '00' : render }
             </button>
           </div>
         );
-      })}
-      <div className={styles.center}></div>
+      }) }
+      <div className={ styles.center }></div>
     </div>
   );
 }

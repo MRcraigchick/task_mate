@@ -1,5 +1,5 @@
 .btnSvgContainer {
-  --btn-diameter: 100px;
+  --btn-diameter: 70px;
   position: fixed;
   right: 0;
   bottom: 0;
@@ -9,9 +9,11 @@
   width: var(--btn-diameter);
   height: var(--btn-diameter);
 }
+
 .bgCircle {
   fill: var(--add-task-btn-bg);
 }
+
 .plusIcon {
   fill: var(--add-task-plus-icon);
 }
